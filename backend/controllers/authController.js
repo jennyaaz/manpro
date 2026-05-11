@@ -1,89 +1,156 @@
-import db from "../config/db.js";
+import { findUserByUsername }
+from "../models/authModel.js";
 
-/* ================= LOGIN ================= */
-export const login = async (req, res) => {
+export const login = async (
+  req,
+  res
+) => {
+
   try {
-    let { username, password } = req.body;
 
-    username = username?.trim();
-    password = password?.trim();
+    const {
+      username,
+      password
+    } = req.body;
 
-    if (!username || !password) {
+    if (
+      !username ||
+      !password
+    ) {
+
       return res.status(400).json({
-        message: "Username dan password wajib diisi",
+        success: false,
+        message:
+          "Username dan password wajib diisi"
       });
+
     }
 
-    const [rows] = await db.query(
-      "SELECT * FROM users WHERE username = ?",
-      [username]
-    );
+    const user =
+      await findUserByUsername(
+        username
+      );
 
-    if (rows.length === 0) {
-      return res.status(401).json({
-        message: "Username tidak ditemukan",
+    if (!user) {
+
+      return res.status(404).json({
+        success: false,
+        message:
+          "User tidak ditemukan"
       });
+
     }
 
-    const user = rows[0];
+    if (
+      password !== user.password
+    ) {
 
-    if (password !== user.password) {
-      return res.status(401).json({
-        message: "Password salah",
+      return res.status(400).json({
+        success: false,
+        message:
+          "Password salah"
       });
+
     }
 
     req.session.user = {
-      id: user.user_id,
+
+      user_id: user.user_id,
+
       nama: user.nama,
+
+      username: user.username,
+
       role: user.role,
+
+      email: user.email
+
     };
 
-    return res.json({
-      message: "Login berhasil",
-      user: req.session.user,
+    res.status(200).json({
+
+      success: true,
+
+      message:
+        "Login berhasil",
+
+      data: req.session.user
+
     });
-  } catch (err) {
-    console.error("LOGIN ERROR:", err);
-    return res.status(500).json({
-      message: "Server error",
+
+  } catch (error) {
+
+    res.status(500).json({
+
+      success: false,
+
+      message: error.message
+
     });
+
   }
+
 };
 
-/* ================= ME ================= */
-export const me = (req, res) => {
-  try {
-    if (!req.session?.user) {
-      return res.status(401).json({
-        message: "Belum login",
-      });
-    }
+export const logout = async (
+  req,
+  res
+) => {
 
-    res.json(req.session.user);
-  } catch (err) {
-    console.error("ME ERROR:", err);
-    res.status(500).json({ message: "Server error" });
+  try {
+
+    req.session.destroy(() => {
+
+      res.status(200).json({
+
+        success: true,
+
+        message:
+          "Logout berhasil"
+
+      });
+
+    });
+
+  } catch (error) {
+
+    res.status(500).json({
+
+      success: false,
+
+      message: error.message
+
+    });
+
   }
+
 };
 
-/* ================= LOGOUT ================= */
-export const logout = (req, res) => {
-  try {
-    req.session.destroy((err) => {
-      if (err) {
-        console.error("LOGOUT ERROR:", err);
-        return res.status(500).json({
-          message: "Gagal logout",
-        });
-      }
+export const me = async (
+  req,
+  res
+) => {
 
-      res.json({
-        message: "Logout berhasil",
-      });
+  try {
+
+    res.status(200).json({
+
+      success: true,
+
+      data: req.session.user
+
     });
-  } catch (err) {
-    console.error("LOGOUT ERROR:", err);
-    res.status(500).json({ message: "Server error" });
+
+  } catch (error) {
+
+    res.status(500).json({
+
+      success: false,
+
+      message: error.message
+
+    });
+
   }
+
 };

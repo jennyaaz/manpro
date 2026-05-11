@@ -1,14 +1,13 @@
-// backend/config/db.js
-import mysql from 'mysql2/promise'; // TAMBAHKAN /promise DI SINI
+import mysql from "mysql2/promise";
 
 const db = mysql.createPool({
-    host: 'localhost',
-    user: 'root',
-    password: '',
-    database: 'manpro',
-    waitForConnections: true,
-    connectionLimit: 10,
-    queueLimit: 0
+  host: "localhost",
+  user: "root",
+  password: "",
+  database: "manpro",
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0
 });
 
 export default db;

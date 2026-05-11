@@ -1,10 +1,10 @@
 import {
-  getRabBySub,
-  getRabById,
-  createRab,
-  updateRab,
-  deleteRab
-} from "../models/rabModel.js";
+  getRealisasiByRab,
+  createRealisasi,
+  updateRealisasi,
+  deleteRealisasi,
+  getProgressByRab
+} from "../models/realisasiModel.js";
 
 export const index = async (
   req,
@@ -13,14 +13,14 @@ export const index = async (
 
   try {
 
-    const rab =
-      await getRabBySub(
-        req.params.subId
+    const realisasi =
+      await getRealisasiByRab(
+        req.params.rabId
       );
 
     res.status(200).json({
       success: true,
-      data: rab
+      data: realisasi
     });
 
   } catch (error) {
@@ -34,21 +34,21 @@ export const index = async (
 
 };
 
-export const show = async (
+export const progress = async (
   req,
   res
 ) => {
 
   try {
 
-    const rab =
-      await getRabById(
-        req.params.id
+    const progressData =
+      await getProgressByRab(
+        req.params.rabId
       );
 
     res.status(200).json({
       success: true,
-      data: rab
+      data: progressData
     });
 
   } catch (error) {
@@ -69,11 +69,11 @@ export const store = async (
 
   try {
 
-    await createRab(req.body);
+    await createRealisasi(req.body);
 
     res.status(201).json({
       success: true,
-      message: "RAB berhasil ditambahkan"
+      message: "Realisasi berhasil ditambahkan"
     });
 
   } catch (error) {
@@ -94,14 +94,14 @@ export const update = async (
 
   try {
 
-    await updateRab(
+    await updateRealisasi(
       req.params.id,
       req.body
     );
 
     res.status(200).json({
       success: true,
-      message: "RAB berhasil diupdate"
+      message: "Realisasi berhasil diupdate"
     });
 
   } catch (error) {
@@ -122,13 +122,13 @@ export const destroy = async (
 
   try {
 
-    await deleteRab(
+    await deleteRealisasi(
       req.params.id
     );
 
     res.status(200).json({
       success: true,
-      message: "RAB berhasil dihapus"
+      message: "Realisasi berhasil dihapus"
     });
 
   } catch (error) {

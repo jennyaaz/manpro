@@ -1,67 +1,133 @@
-import db from "../config/db.js";
+import bcrypt from "bcrypt";
 
-/* ================= GET USER ================= */
-export const getUser = async (req, res) => {
+import {
+  getAllUsers,
+  getUserById,
+  createUser,
+  updateUser,
+  deleteUser
+} from "../models/userModel.js";
+
+export const index = async (req, res) => {
   try {
-    const [rows] = await db.query("SELECT * FROM users");
-    res.json(rows);
-  } catch (err) {
-    console.error("GET USER ERROR:", err);
-    res.status(500).json({ message: "Database error" });
+    const users = await getAllUsers();
+
+    res.status(200).json({
+      success: true,
+      data: users
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
   }
 };
 
-/* ================= CREATE USER ================= */
-export const createUser = async (req, res) => {
+export const show = async (req, res) => {
   try {
-    const { nama, username, password, role, email } = req.body;
+    const user = await getUserById(
+      req.params.id
+    );
 
-    if (!nama || !username || !password || !role) {
-      return res.status(400).json({ message: "Data tidak lengkap" });
+    res.status(200).json({
+      success: true,
+      data: user
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+export const store = async (req, res) => {
+  try {
+    const {
+      nama,
+      username,
+      password,
+      role,
+      email
+    } = req.body;
+
+    if (
+      !nama ||
+      !username ||
+      !password ||
+      !role ||
+      !email
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Semua field wajib diisi"
+      });
     }
 
-    await db.query(
-      "INSERT INTO users (nama, username, password, role, email) VALUES (?,?,?,?,?)",
-      [nama, username, password, role, email]
+    const hashPassword = await bcrypt.hash(
+      password,
+      10
     );
 
-    res.json({ message: "User ditambah" });
-  } catch (err) {
-    console.error("CREATE USER ERROR:", err);
-    res.status(500).json({ message: "Database error" });
+    await createUser({
+      nama,
+      username,
+      password: hashPassword,
+      role,
+      email
+    });
+
+    res.status(201).json({
+      success: true,
+      message: "User berhasil ditambahkan"
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
   }
 };
 
-/* ================= UPDATE USER ================= */
-export const updateUser = async (req, res) => {
+export const update = async (req, res) => {
   try {
-    const { id } = req.params;
-    const { nama, username, password, role, email } = req.body;
-
-    await db.query(
-      `UPDATE users 
-       SET nama=?, username=?, password=?, role=?, email=? 
-       WHERE user_id=?`,
-      [nama, username, password, role, email, id]
+    await updateUser(
+      req.params.id,
+      req.body
     );
 
-    res.json({ message: "User diupdate" });
-  } catch (err) {
-    console.error("UPDATE USER ERROR:", err);
-    res.status(500).json({ message: "Database error" });
+    res.status(200).json({
+      success: true,
+      message: "User berhasil diupdate"
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
   }
 };
 
-/* ================= DELETE USER ================= */
-export const deleteUser = async (req, res) => {
+export const destroy = async (req, res) => {
   try {
-    const { id } = req.params;
+    await deleteUser(
+      req.params.id
+    );
 
-    await db.query("DELETE FROM users WHERE user_id=?", [id]);
+    res.status(200).json({
+      success: true,
+      message: "User berhasil dihapus"
+    });
 
-    res.json({ message: "User dihapus" });
-  } catch (err) {
-    console.error("DELETE USER ERROR:", err);
-    res.status(500).json({ message: "Database error" });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
   }
 };

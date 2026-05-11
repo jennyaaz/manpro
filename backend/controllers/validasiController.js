@@ -1,48 +1,59 @@
-import db from "../config/db.js";
+import {
+  approveProyek,
+  rejectProyek
+} from "../models/validasiModel.js";
 
-export const getListRab = async (req, res) => { // Tambahkan 'async' di sini
-  const query = `
-    SELECT 
-      p.proyek_id, 
-      p.nama_proyek, 
-      p.no_spk, 
-      p.status_rab, 
-      p.catatan_revisi, 
-      k.nama_klien,
-      IFNULL(SUM(r.total), 0) as total_rab
-    FROM proyek p
-    LEFT JOIN klien k ON p.klien_id = k.klien_id
-    LEFT JOIN pekerjaan pk ON p.proyek_id = pk.proyek_id
-    LEFT JOIN sub_pekerjaan sp ON pk.pekerjaan_id = sp.pekerjaan_id
-    LEFT JOIN rab r ON sp.sub_id = r.sub_id
-    GROUP BY p.proyek_id
-    ORDER BY p.created_at DESC
-  `;
+export const approve = async (
+  req,
+  res
+) => {
 
   try {
-    // Pakai [result] karena mysql2/promise mengembalikan array [rows, fields]
-    const [result] = await db.query(query); 
-    res.json(result);
-  } catch (err) {
-    console.error("Database Error:", err);
-    res.status(500).json({ error: err.message });
+
+    await approveProyek(
+      req.params.proyekId
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Proyek berhasil diapprove"
+    });
+
+  } catch (error) {
+
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+
   }
+
 };
 
-export const updateValidasiRab = (req, res) => {
-  const { proyekId } = req.params;
-  const { status_rab, catatan_revisi } = req.body;
+export const reject = async (
+  req,
+  res
+) => {
 
-  const query = `
-    UPDATE proyek 
-    SET status_rab = ?, catatan_revisi = ?, updated_at = NOW() 
-    WHERE proyek_id = ?`;
+  try {
 
-  db.query(query, [status_rab, catatan_revisi, proyekId], (err, result) => {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json({ 
-      message: `Status RAB proyek berhasil diubah ke ${status_rab}`,
-      status: status_rab 
+    await rejectProyek(
+      req.params.proyekId,
+      req.body.catatan_revisi
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Proyek berhasil direject"
     });
-  });
+
+  } catch (error) {
+
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+
+  }
+
 };

@@ -1,66 +1,94 @@
-import db from "../config/db.js";
+import {
+  getPekerjaanByProyek,
+  createPekerjaan,
+  updatePekerjaan,
+  deletePekerjaan
+} from "../models/pekerjaanModel.js";
 
-// Ambil Pekerjaan Berdasarkan Proyek
-export const getPekerjaanByProyek = async (req, res) => {
+export const index = async (req, res) => {
   try {
-    const { proyek_id } = req.params;
-    const query = `
-      SELECT 
-        pk.pekerjaan_id,
-        pk.nama_pekerjaan,
-        COUNT(sp.sub_id) AS jumlah_sub
-      FROM pekerjaan pk
-      LEFT JOIN sub_pekerjaan sp ON sp.pekerjaan_id = pk.pekerjaan_id
-      WHERE pk.proyek_id = ?
-      GROUP BY pk.pekerjaan_id, pk.nama_pekerjaan
-      ORDER BY pk.pekerjaan_id ASC
-    `;
-    const [result] = await db.query(query, [proyek_id]);
-    res.json(result);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+
+    const pekerjaan =
+      await getPekerjaanByProyek(
+        req.params.proyekId
+      );
+
+    res.status(200).json({
+      success: true,
+      data: pekerjaan
+    });
+
+  } catch (error) {
+
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+
   }
 };
 
-// Create Pekerjaan
-export const createPekerjaan = async (req, res) => {
+export const store = async (req, res) => {
   try {
-    const { proyek_id, nama_pekerjaan } = req.body;
-    if (!proyek_id || !nama_pekerjaan) {
-      return res.status(400).json({ message: "Data tidak lengkap" });
-    }
-    await db.query(
-      "INSERT INTO pekerjaan (proyek_id, nama_pekerjaan) VALUES (?,?)",
-      [proyek_id, nama_pekerjaan]
+
+    await createPekerjaan(req.body);
+
+    res.status(201).json({
+      success: true,
+      message: "Pekerjaan berhasil ditambahkan"
+    });
+
+  } catch (error) {
+
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+
+  }
+};
+
+export const update = async (req, res) => {
+  try {
+
+    await updatePekerjaan(
+      req.params.id,
+      req.body
     );
-    res.json({ message: "Pekerjaan berhasil ditambah" });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+
+    res.status(200).json({
+      success: true,
+      message: "Pekerjaan berhasil diupdate"
+    });
+
+  } catch (error) {
+
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+
   }
 };
 
-// Update Pekerjaan
-export const updatePekerjaan = async (req, res) => {
+export const destroy = async (req, res) => {
   try {
-    const { id } = req.params;
-    const { nama_pekerjaan } = req.body;
-    await db.query(
-      "UPDATE pekerjaan SET nama_pekerjaan=? WHERE pekerjaan_id=?",
-      [nama_pekerjaan, id]
+
+    await deletePekerjaan(
+      req.params.id
     );
-    res.json({ message: "Pekerjaan berhasil diupdate" });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-};
 
-// Delete Pekerjaan
-export const deletePekerjaan = async (req, res) => {
-  try {
-    const { id } = req.params;
-    await db.query("DELETE FROM pekerjaan WHERE pekerjaan_id=?", [id]);
-    res.json({ message: "Pekerjaan berhasil dihapus" });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(200).json({
+      success: true,
+      message: "Pekerjaan berhasil dihapus"
+    });
+
+  } catch (error) {
+
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+
   }
 };

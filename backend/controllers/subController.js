@@ -1,41 +1,21 @@
 import {
-  getAllKlien,
-  getKlienById,
-  createKlien,
-  updateKlien,
-  deleteKlien
-} from "../models/klienModel.js";
+  getSubByPekerjaan,
+  createSub,
+  updateSub,
+  deleteSub
+} from "../models/subModel.js";
 
 export const index = async (req, res) => {
   try {
 
-    const klien = await getAllKlien();
+    const sub =
+      await getSubByPekerjaan(
+        req.params.pekerjaanId
+      );
 
     res.status(200).json({
       success: true,
-      data: klien
-    });
-
-  } catch (error) {
-
-    res.status(500).json({
-      success: false,
-      message: error.message
-    });
-
-  }
-};
-
-export const show = async (req, res) => {
-  try {
-
-    const klien = await getKlienById(
-      req.params.id
-    );
-
-    res.status(200).json({
-      success: true,
-      data: klien
+      data: sub
     });
 
   } catch (error) {
@@ -51,11 +31,11 @@ export const show = async (req, res) => {
 export const store = async (req, res) => {
   try {
 
-    await createKlien(req.body);
+    await createSub(req.body);
 
     res.status(201).json({
       success: true,
-      message: "Klien berhasil ditambahkan"
+      message: "Sub pekerjaan berhasil ditambahkan"
     });
 
   } catch (error) {
@@ -71,14 +51,14 @@ export const store = async (req, res) => {
 export const update = async (req, res) => {
   try {
 
-    await updateKlien(
+    await updateSub(
       req.params.id,
       req.body
     );
 
     res.status(200).json({
       success: true,
-      message: "Klien berhasil diupdate"
+      message: "Sub pekerjaan berhasil diupdate"
     });
 
   } catch (error) {
@@ -94,11 +74,13 @@ export const update = async (req, res) => {
 export const destroy = async (req, res) => {
   try {
 
-    await deleteKlien(req.params.id);
+    await deleteSub(
+      req.params.id
+    );
 
     res.status(200).json({
       success: true,
-      message: "Klien berhasil dihapus"
+      message: "Sub pekerjaan berhasil dihapus"
     });
 
   } catch (error) {
